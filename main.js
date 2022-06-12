@@ -31,6 +31,20 @@ function toggleMenu() {
     }
 }
 
-function filterSearch(){
-    let rule = document.getElementById(`searchInput`).value;
+function filterSearch(ev){
+    ev.preventDefault();
+    const input = document.getElementById(`searchInput`)
+    const rule = input.value;
+    input.value = ``;
+    let container = document.getElementById(`main`);
+    container.childNodes.forEach(card => {
+        let $card = $(card)
+        let header = $card.find(`.card-title`)[0].innerText;
+        if (header.includes(rule)) {
+            card.style.display = "block";
+        }
+        else {
+            card.style.display = "none";
+        }
+    });
 }
