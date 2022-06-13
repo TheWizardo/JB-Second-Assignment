@@ -10,6 +10,22 @@
 } */
 
 .card {
-    min-width: 15rem;
-    margin: 1em;
+    width: 15rem;
+    margin: 0.2em;
+}
+
+.form-check-input {
+    margin-left: 0.5em !important;
+}
+
+.small-gray {
+    color: gray;
+    font-size: small;
+}
+
+.psudeo-card {
+    border-color: var(--bs-border-color-translucent);
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    word-wrap: break-word;
 }
