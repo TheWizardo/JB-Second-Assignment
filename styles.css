@@ -1,16 +1,16 @@
-/* .parallax {
-    background-image: url("https://png.pngtree.com/thumb_back/fh260/background/20190813/pngtree-horizontal-vector-halloween-banner-background-with-grunge-border-image_297712.jpg");
-  
+.parallax {
+    background-image: url("/assets/cryptocurrency.jpg");
+
     min-height: 200px;
 
     background-attachment: fixed;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-} */
+}
 
 .card {
-    width: 15rem;
+    width: 13rem;
     margin: 0.2em;
 }
 
@@ -30,40 +30,84 @@
     word-wrap: break-word;
 }
 
-.spanner{
-    position:fixed;
+.spanner {
+    position: fixed;
     top: 0;
     left: 0;
     background: #2a2a2a55;
     width: 100%;
-    display:block;
-    text-align:center;
+    display: block;
+    text-align: center;
     height: 300px;
     color: #FFF;
     z-index: 1000;
     visibility: hidden;
     height: 100vh;
-  }
-  
-  .overlay{
+}
+
+.overlay {
     position: fixed;
-      width: 100%;
-      height: 100%;
-    background: rgba(0,0,0,0.5);
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
     visibility: hidden;
-  }
-  
-  .show{
+}
+
+.show {
     visibility: visible;
-  }
-  
-  .spanner, .overlay{
-      opacity: 0;
-      -webkit-transition: all 0.3s;
-      -moz-transition: all 0.3s;
-      transition: all 0.3s;
-  }
-  
-  .spanner.show, .overlay.show {
-      opacity: 1
-  }
+}
+
+.spanner,
+.overlay {
+    opacity: 0;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.spanner.show,
+.overlay.show {
+    opacity: 1
+}
+
+/* card modal styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    /* fallback */
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    width: 25px;
+    position: absolute;
+    right: 1rem;
+}
+
+td {
+    border: black 1px solid;
+}
+
+.error {
+    display: none;
+}
+
+.error.show {
+    color: red;
+    display: inline;
+}

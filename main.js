@@ -54,6 +54,7 @@ async function loadCoins(url) {
 
         const input = document.createElement(`input`);
         input.className = "form-check-input";
+        input.id = `${e.symbol}-switch`;
         input.setAttribute("type", "checkbox");
         input.setAttribute("role", "switch");
         input.addEventListener("click", switchSwitched);
@@ -99,20 +100,40 @@ async function loadCoins(url) {
 }
 
 function switchSwitched(ev) {
-    // checking if the user already checked 5 coins, or if he wishes to uncheck
-    if (liveCoins.length < 5 || !ev.target.checked) {
-        let $cardContent = $(ev.target.parentNode);
-        let header = $cardContent.find(`.card-title`)[0].innerText;
-        if (liveCoins.includes(header)) {
-            liveCoins.splice(liveCoins.indexOf(header), 1);
-        }
-        else {
-            liveCoins.push(header);
-        }
+    let $cardContent = $(ev.target.parentNode);
+    let header = $cardContent.find(`.card-title`)[0].innerText;
+    if (!ev.target.checked) {
+        liveCoins.splice(liveCoins.indexOf(header), 1);
     }
     else {
-        ev.target.checked = false;
-        alert("no more than 5 bitch");
+        liveCoins.push(header);
+        if (liveCoins.length > 5) {
+            for (let i in liveCoins) {
+                document.getElementById(`coin-${i}`).innerText = liveCoins[i];
+            }
+            document.getElementById("errorModal").style.display = "block";
+        }
+    }
+}
+
+function handleConflict(ev) {
+    let header = ev.target.parentNode.previousElementSibling.innerText;
+    document.getElementById(`${header}-switch`).checked = ev.target.checked;
+    if (!ev.target.checked) {
+        liveCoins.splice(liveCoins.indexOf(header), 1);
+    }
+    else {
+        liveCoins.push(header);
+    }
+}
+
+function closeModal() {
+    if (liveCoins.length <= 5) {
+        document.getElementById("errorModal").style.display = "none";
+        console.log(liveCoins);
+    }
+    else {
+        showItem(document.getElementById("error-span"))
     }
 }
 
@@ -145,12 +166,12 @@ function openCollapse(ev) {
 
 async function changePage(ev) {
     let ref = ev.target.href.split("#")[1];
-    let res = await fetch(`./blank-template.html`);
-    document.body.innerHTML = await res.text();
+    let res = await fetch(`./${ref}-body.html`);
+    document.getElementById("content").innerHTML = await res.text();
     switch (ref) {
         case "home":
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
-            await loadCoins(`./response.json`);//baseURL);
+            await loadCoins("./response.json");//BASE_URL);
             break;
         case "about":
             break;
