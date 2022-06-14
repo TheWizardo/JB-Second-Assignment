@@ -8,7 +8,16 @@ let cache = {};
     });
 })();
 
+function showItem(element) {
+    element.className += " show";
+}
+
+function hideItem(element) {
+    element.className = element.className.replace(" show", "").replace("show ", "");
+}
+
 async function getInfo(url) {
+    showItem(document.getElementById("spinner"));
     if (Object.keys(cache).includes(url)) {
         if (Date.now() - cache[url].from > 2 * 60 * 1000) {
             console.log("fetching", url);
@@ -36,6 +45,7 @@ async function getInfo(url) {
 
 async function loadCoins(url) {
     allCoins = await getInfo(url);
+    hideItem(document.getElementById("spinner"));
     allCoins.map(e => {
         const title = document.createElement(`h4`);
         title.className = "card-title";
@@ -111,26 +121,28 @@ function switchSwitched(ev) {
 
 function openCollapse(ev) {
     let key = ev.target.dataset.id;
+    const collapse = document.getElementById(`${key}-collapse`);
     switch (ev.target.innerText) {
-    case "More Info":
-        ev.target.innerText = "Less Info";
-        const BASE_URL = "https://api.coingecko.com/api/v3/coins/";
-        getInfo(`${BASE_URL}${key}`).then(res => {
-            document.getElementById(`${key}-collapse`).className += " show";
-            document.getElementById(`${key}-collapse-content`). innerHTML = 
-            `<img src="${res.image.small}">
+        case "More Info":
+            ev.target.innerText = "Less Info";
+            const BASE_URL = "https://api.coingecko.com/api/v3/coins/";
+            getInfo(`${BASE_URL}${key}`).then(res => {
+                hideItem(document.getElementById("spinner"));
+                showItem(collapse);
+                document.getElementById(`${key}-collapse-content`).innerHTML =
+                    `<img src="${res.image.small}">
             <p>USD: ${res.market_data.current_price.usd}$</p>
             <p>ILS: ${res.market_data.current_price.ils}₪</p>
             <p>EUR: ${res.market_data.current_price.eur}€</p>`;
-        });
-        break;
+            });
+            break;
 
-    case "Less Info":
-        ev.target.innerText = "More Info";
-        document.getElementById(`${key}-collapse`).className = "collapse";
-        break;
-    default:
-        throw new Error("something went wrong...");
+        case "Less Info":
+            ev.target.innerText = "More Info";
+            hideItem(collapse);
+            break;
+        default:
+            throw new Error("something went wrong...");
     }
 }
 
@@ -141,12 +153,7 @@ function changePage(ev) {
 
 function toggleMenu() {
     let menu = document.getElementById(`navbarSupportedContent`);
-    if (menu.className.includes(`show`)) {
-        menu.className = menu.className.replace(` show`, ``).replace(`show `, ``);
-    }
-    else {
-        menu.className += ` show`;
-    }
+    menu.className.includes(`show`) ? hideItem(menu) : showItem(menu);
 }
 
 function filterSearch(ev) {

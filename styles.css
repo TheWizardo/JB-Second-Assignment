@@ -29,3 +29,41 @@
     padding: 0.5rem 1rem;
     word-wrap: break-word;
 }
+
+.spanner{
+    position:fixed;
+    top: 0;
+    left: 0;
+    background: #2a2a2a55;
+    width: 100%;
+    display:block;
+    text-align:center;
+    height: 300px;
+    color: #FFF;
+    z-index: 1000;
+    visibility: hidden;
+    height: 100vh;
+  }
+  
+  .overlay{
+    position: fixed;
+      width: 100%;
+      height: 100%;
+    background: rgba(0,0,0,0.5);
+    visibility: hidden;
+  }
+  
+  .show{
+    visibility: visible;
+  }
+  
+  .spanner, .overlay{
+      opacity: 0;
+      -webkit-transition: all 0.3s;
+      -moz-transition: all 0.3s;
+      transition: all 0.3s;
+  }
+  
+  .spanner.show, .overlay.show {
+      opacity: 1
+  }
