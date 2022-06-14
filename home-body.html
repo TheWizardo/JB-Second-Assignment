@@ -1,0 +1,48 @@
+<section class="container d-flex flex-wrap justify-content-center parallax" id="main"></section>
+<div class="overlay"></div>
+<div id="spinner" class="spanner d-flex justify-content-center align-items-center">
+    <div class="spinner-border m-5" role="status">
+        <span class="visually-hidden"></span>
+    </div>
+    <p style="font-size: x-large;">Retrieving information...</p>
+</div>
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <button class="close" onclick="closeModal()">&times;</button>
+        <h2>Error: Too many coins chosen</h2>
+        <p>Please resolve this conflict.</p>
+        <span class="error" id="error-span">I cannot let you leave things like this!</span>
+        <table id="conflict">
+            <tr>
+                <td id="coin-0"></td>
+                <td><input type="checkbox" class="form-check-input" role="switch" checked="true"
+                        onclick="handleConflict(event)"></td>
+            </tr>
+            <tr>
+                <td id="coin-1"></td>
+                <td><input type="checkbox" class="form-check-input" role="switch" checked="true"
+                        onclick="handleConflict(event)"></td>
+            </tr>
+            <tr>
+                <td id="coin-2"></td>
+                <td><input type="checkbox" class="form-check-input" role="switch" checked="true"
+                        onclick="handleConflict(event)"></td>
+            </tr>
+            <tr>
+                <td id="coin-3"></td>
+                <td><input type="checkbox" class="form-check-input" role="switch" checked="true"
+                        onclick="handleConflict(event)"></td>
+            </tr>
+            <tr>
+                <td id="coin-4"></td>
+                <td><input type="checkbox" class="form-check-input" role="switch" checked="true"
+                        onclick="handleConflict(event)"></td>
+            </tr>
+            <tr>
+                <td id="coin-5"></td>
+                <td><input type="checkbox" class="form-check-input" role="switch" checked="true"
+                        onclick="handleConflict(event)"></td>
+            </tr>
+        </table>
+    </div>
+</div>
