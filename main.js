@@ -2,9 +2,8 @@ let liveCoins = [];
 let cache = {};
 
 (function () {
-    let baseURL = `https://api.coingecko.com/api/v3/coins/list`;
     document.addEventListener('DOMContentLoaded', async function () {
-        await loadCoins(`./response.json`);//baseURL);
+        await changePage({ target: { href: "#home" } });
     });
 })();
 
@@ -20,7 +19,6 @@ async function getInfo(url) {
     showItem(document.getElementById("spinner"));
     if (Object.keys(cache).includes(url)) {
         if (Date.now() - cache[url].from > 2 * 60 * 1000) {
-            console.log("fetching", url);
             let res = $.ajax(url);
             cache[url] = {
                 result: res,
@@ -33,7 +31,6 @@ async function getInfo(url) {
         }
     }
     else {
-        console.log("fetching", url);
         let res = $.ajax(url);
         cache[url] = {
             result: res,
@@ -146,9 +143,23 @@ function openCollapse(ev) {
     }
 }
 
-function changePage(ev) {
-    ev.preventDefault();
-    console.dir(ev.target.href)
+async function changePage(ev) {
+    let ref = ev.target.href.split("#")[1];
+    let res = await fetch(`./blank-template.html`);
+    document.body.innerHTML = await res.text();
+    switch (ref) {
+        case "home":
+            const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
+            await loadCoins(`./response.json`);//baseURL);
+            break;
+        case "about":
+            break;
+        case "live-reports":
+            break;
+        default:
+            // 404
+            break;
+    }
 }
 
 function toggleMenu() {
@@ -160,16 +171,19 @@ function filterSearch(ev) {
     ev.preventDefault();
     const input = document.getElementById(`searchInput`)
     const rule = input.value;
-    input.value = ``;
     let container = document.getElementById(`main`);
     container.childNodes.forEach(card => {
         let $card = $(card)
         let header = $card.find(`.card-title`)[0].innerText;
-        if (header.includes(rule)) {
+        if (rule === "" || header === rule) {
             card.style.display = "block";
         }
         else {
             card.style.display = "none";
         }
     });
+}
+
+function clearSearch(ev) {
+    document.getElementById(`main`).childNodes.forEach(card => card.style.display = "block");
 }
