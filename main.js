@@ -3,10 +3,12 @@ let cache = {};
 
 (function () {
     document.addEventListener('DOMContentLoaded', async function () {
+        // after page has loaded, go to home page.
         await changePage({ target: { href: "#home" } });
     });
 })();
 
+// show hidden items.
 function showItem(element) {
     element.className += " show";
 }
@@ -16,10 +18,16 @@ function hideItem(element) {
 }
 
 async function getInfo(url) {
+    // starting spinner when fetching.
     showItem(document.getElementById("spinner"));
+
+    // check if data has already been cached.
     if (Object.keys(cache).includes(url)) {
+        // check if data is too old. over 2 minutes.
         if (Date.now() - cache[url].from > 2 * 60 * 1000) {
             let res = $.ajax(url);
+
+            // chaching the result.
             cache[url] = {
                 result: res,
                 from: Date.now()
@@ -32,6 +40,8 @@ async function getInfo(url) {
     }
     else {
         let res = $.ajax(url);
+
+        // chaching the result.
         cache[url] = {
             result: res,
             from: Date.now()
@@ -41,17 +51,22 @@ async function getInfo(url) {
 }
 
 async function loadCoins(url) {
+    // fetching data.
     allCoins = await getInfo(url);
+    // hiding the spinner after recieving the data.
     hideItem(document.getElementById("spinner"));
     allCoins.map(e => {
+        // creating a title.
         const title = document.createElement(`h4`);
         title.className = "card-title";
         title.innerText = e.symbol;
 
+        // creating a lable for the switch.
         const lable = document.createElement(`lable`);
         lable.className = "small-gray";
         lable.innerText = "Show on Live Reports";
 
+        // creating a switch.
         const input = document.createElement(`input`);
         input.className = "form-check-input";
         input.id = `${e.symbol}-switch`;
@@ -59,30 +74,25 @@ async function loadCoins(url) {
         input.setAttribute("role", "switch");
         input.addEventListener("click", switchSwitched);
 
+        // creating coin explenation.
         const par = document.createElement(`p`);
         par.className = "catd-text";
         par.innerText = e.name;
-
-        const btn = document.createElement(`a`);
+        
+        // creating "More Info" button.
+        const btn = document.createElement(`button`);
         btn.className = "btn btn-primary";
-        btn.setAttribute("href", `#${e.id}`);
-        btn.setAttribute("role", `button`);
         btn.setAttribute("data-id", `${e.id}`);
-        btn.setAttribute("aria-expanded", `false`);
         btn.setAttribute("aria-controls", `${e.id}-collapse`);
         btn.innerText = "More Info";
         btn.addEventListener("click", openCollapse);
 
-
-        const collapseContent = document.createElement(`div`);
-        collapseContent.className = "psudeo-card card-body";
-        collapseContent.id = `${e.id}-collapse-content`;
-
+        // creating a collapse.
         const collapseDiv = document.createElement(`div`);
-        collapseDiv.className = "collapse";
+        collapseDiv.className = "collapse p-2";
         collapseDiv.id = `${e.id}-collapse`;
-        collapseDiv.appendChild(collapseContent);
 
+        // appending all children to the content of the card.
         const cardContent = document.createElement(`div`);
         cardContent.className = "card-body form-switch";
         cardContent.appendChild(title);
@@ -92,6 +102,7 @@ async function loadCoins(url) {
         cardContent.appendChild(btn);
         cardContent.appendChild(collapseDiv);
 
+        // adding the card to the screen.
         const wholeCard = document.createElement(`div`);
         wholeCard.className = "card";
         wholeCard.appendChild(cardContent);
@@ -100,24 +111,31 @@ async function loadCoins(url) {
 }
 
 function switchSwitched(ev) {
+    // retrieving the content of the card.
     let $cardContent = $(ev.target.parentNode);
+    // finding the title.
     let header = $cardContent.find(`.card-title`)[0].innerText;
     if (!ev.target.checked) {
+        // removing the coin from the list.
         liveCoins.splice(liveCoins.indexOf(header), 1);
     }
     else {
         liveCoins.push(header);
         if (liveCoins.length > 5) {
+            // loading the coins to the modal.
             for (let i in liveCoins) {
                 document.getElementById(`coin-${i}`).innerText = liveCoins[i];
             }
+            // showing the modal.
             document.getElementById("errorModal").style.display = "block";
         }
     }
 }
 
 function handleConflict(ev) {
+    // getting the title from the ajacent cell of the table.
     let header = ev.target.parentNode.previousElementSibling.innerText;
+    // updating main cards according to the choice.
     document.getElementById(`${header}-switch`).checked = ev.target.checked;
     if (!ev.target.checked) {
         liveCoins.splice(liveCoins.indexOf(header), 1);
@@ -128,61 +146,81 @@ function handleConflict(ev) {
 }
 
 function closeModal() {
+    // able to close the modal only if 5 or less coins are selected.
     if (liveCoins.length <= 5) {
         document.getElementById("errorModal").style.display = "none";
-        console.log(liveCoins);
     }
     else {
+        // showing an error to the user.
         showItem(document.getElementById("error-span"))
     }
 }
 
 function openCollapse(ev) {
+    // getting the coin id.
     let key = ev.target.dataset.id;
     const collapse = document.getElementById(`${key}-collapse`);
     switch (ev.target.innerText) {
         case "More Info":
             ev.target.innerText = "Less Info";
+            // fetching the info.
             const BASE_URL = "https://api.coingecko.com/api/v3/coins/";
             getInfo(`${BASE_URL}${key}`).then(res => {
+                // hiding the spinner.
                 hideItem(document.getElementById("spinner"));
-                showItem(collapse);
-                document.getElementById(`${key}-collapse-content`).innerHTML =
+                // inserting relevent info.
+                document.getElementById(`${key}-collapse`).innerHTML =
                     `<img src="${res.image.small}">
-            <p>USD: ${res.market_data.current_price.usd}$</p>
-            <p>ILS: ${res.market_data.current_price.ils}₪</p>
-            <p>EUR: ${res.market_data.current_price.eur}€</p>`;
+                     <p>USD: ${res.market_data.current_price.usd}$</p>
+                     <p>ILS: ${res.market_data.current_price.ils}₪</p>
+                     <p>EUR: ${res.market_data.current_price.eur}€</p>`;
+                showItem(collapse);
             });
             break;
-
         case "Less Info":
             ev.target.innerText = "More Info";
             hideItem(collapse);
             break;
         default:
+            // handeling of other scenarios.
+            // not supposed to get here.
             throw new Error("something went wrong...");
     }
 }
 
 async function changePage(ev) {
+    // getting the desired page. 
     let ref = ev.target.href.split("#")[1];
-    let res = await fetch(`./${ref}-body.html`);
-    document.getElementById("content").innerHTML = await res.text();
+    let res;
     switch (ref) {
         case "home":
+            // fetching the template.
+            res = await fetch(`./home-body.html`);
+            document.getElementById("content").innerHTML = await res.text();
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
+            // loading coin cards to screen.
             await loadCoins("./response.json");//BASE_URL);
             break;
         case "about":
+            // fetching the template.
+            res = await fetch(`./about-body.html`);
+            document.getElementById("content").innerHTML = await res.text();
             break;
         case "live-reports":
+            // fetching the template.
+            res = await fetch(`./live-reports-body.html`);
+            document.getElementById("content").innerHTML = await res.text();
             break;
         default:
-            // 404
+            // not supposed to get here.
+            // fetching the template.
+            res = await fetch(`./error-body.html`);
+            document.getElementById("content").innerHTML = await res.text();
             break;
     }
 }
 
+// toggleing the nav-bar.
 function toggleMenu() {
     let menu = document.getElementById(`navbarSupportedContent`);
     menu.className.includes(`show`) ? hideItem(menu) : showItem(menu);
@@ -190,12 +228,13 @@ function toggleMenu() {
 
 function filterSearch(ev) {
     ev.preventDefault();
-    const input = document.getElementById(`searchInput`)
-    const rule = input.value;
+    // getting the rule to filter by.
+    const rule = document.getElementById(`searchInput`).value;
     let container = document.getElementById(`main`);
     container.childNodes.forEach(card => {
         let $card = $(card)
         let header = $card.find(`.card-title`)[0].innerText;
+        // showing all cards that fit the search
         if (rule === "" || header === rule) {
             card.style.display = "block";
         }
@@ -206,5 +245,6 @@ function filterSearch(ev) {
 }
 
 function clearSearch(ev) {
+    document.getElementById(`searchInput`).value = "";
     document.getElementById(`main`).childNodes.forEach(card => card.style.display = "block");
 }
