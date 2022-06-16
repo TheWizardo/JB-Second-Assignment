@@ -23,13 +23,6 @@
     font-size: small;
 }
 
-.psudeo-card {
-    border-color: var(--bs-border-color-translucent);
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    word-wrap: break-word;
-}
-
 .spanner {
     position: fixed;
     top: 0;
