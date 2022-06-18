@@ -1,4 +1,4 @@
-let liveCoins = [];
+let liveCoins = []; //TO DO: change liveCoins data structure
 let cache = {};
 let chart;
 
@@ -86,7 +86,6 @@ async function loadCoins(url) {
         // creating "More Info" button.
         const btn = document.createElement(`button`);
         btn.className = "btn btn-primary";
-        btn.setAttribute("data-id", `${e.id}`);
         btn.setAttribute("aria-controls", `${e.id}-collapse`);
         btn.innerText = "More Info";
         btn.addEventListener("click", openCollapse);
@@ -99,6 +98,7 @@ async function loadCoins(url) {
         // appending all children to the content of the card.
         const cardContent = document.createElement(`div`);
         cardContent.className = "card-body form-switch";
+        cardContent.setAttribute("data-id", `${e.id}`);
         cardContent.appendChild(title);
         cardContent.appendChild(lable);
         cardContent.appendChild(input);
@@ -170,7 +170,7 @@ function closeModal() {
 
 function openCollapse(ev) {
     // getting the coin id.
-    let key = ev.target.dataset.id;
+    let key = ev.target.parentNode.dataset.id;
     const collapse = document.getElementById(`${key}-collapse`);
     switch (ev.target.innerText) {
         case "More Info":
@@ -213,7 +213,7 @@ async function changePage(ev) {
             document.getElementById("content").innerHTML = await res.text();
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
             // loading coin cards to screen.
-            await loadCoins("./response.json");//BASE_URL);
+            await loadCoins(BASE_URL);
             break;
         case "about":
             // fetching the template.
@@ -225,7 +225,7 @@ async function changePage(ev) {
             // TODO************************** CREATE PAGE.
             res = await fetch(`./live-reports-body.html`);
             document.getElementById("content").innerHTML = await res.text();
-            await loadReports();
+            await loadReports(true);
             break;
         default:
             // not supposed to get here.
@@ -236,16 +236,16 @@ async function changePage(ev) {
     }
 }
 
-async function loadReports() {
+async function loadReports(ask) {
+    closeModal();
     const BASE_URL = "https://min-api.cryptocompare.com/data/pricemulti";
     const TSYMS = `USD`;
     const FSYMS = liveCoins.join(',');
-    console.log(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
     let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
     let res = await raw_res.json();
     if (!res.Response) {
         // check if all coins came back
-        if (Object.keys(res).length < liveCoins.length) {
+        if (Object.keys(res).length < liveCoins.length && ask) {
             liveCoins.forEach(el => {
                 if (!res[el.toUpperCase()]) {
                     const item = document.createElement("li");
@@ -258,19 +258,22 @@ async function loadReports() {
         else {
             let parsedData = [];
             Object.keys(res).forEach(coin => parsedData.push({
-                name: "Myrtle Beach",
+                name: coin,
                 type: "spline",
                 yValueFormatString: "#0.##$",
                 showInLegend: true,
-                dataPoints: [{ x: Date.now(), y: res.USD }]
+                dataPoints: [{ x: new Date(), y: res[coin].USD }]
             }));
 
+            if (chart) {
+                clearInterval(chart.loader);
+            }
             chart = new CanvasJS.Chart("chartContainer", {
                 title: {
                     text: "Current Price"
                 },
                 axisX: {
-                    valueFormatString: "HH:MM"
+                    valueFormatString: "HH:mm"
                 },
                 axisY: {
                     title: "Price (in USD)",
@@ -279,7 +282,16 @@ async function loadReports() {
                 data: parsedData
             });
             chart.render();
-            console.log(res);
+            console.log(chart.loader);
+            chart.loader = setInterval(async () => {
+                let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
+                let res = await raw_res.json();
+                for (let i = 0; i < chart.data.length; i++) {
+                    console.log(chart.data[i].name);
+                    chart.data[i].addTo("dataPoints", { x: new Date(), y: res[chart.data[i].name].USD });
+                }
+                chart.render();
+            }, 10 * 1000);
         }
     }
     else {
