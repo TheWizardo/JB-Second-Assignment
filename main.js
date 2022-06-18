@@ -1,5 +1,6 @@
 let liveCoins = [];
 let cache = {};
+let chart;
 
 (function () {
     document.addEventListener('DOMContentLoaded', async function () {
@@ -72,13 +73,16 @@ async function loadCoins(url) {
         input.id = `${e.symbol}-switch`;
         input.setAttribute("type", "checkbox");
         input.setAttribute("role", "switch");
+        if (liveCoins.includes(e.symbol)) {
+            input.setAttribute("checked", "true");
+        }
         input.addEventListener("click", switchSwitched);
 
         // creating coin explenation.
         const par = document.createElement(`p`);
         par.className = "catd-text";
         par.innerText = e.name;
-        
+
         // creating "More Info" button.
         const btn = document.createElement(`button`);
         btn.className = "btn btn-primary";
@@ -125,10 +129,18 @@ function switchSwitched(ev) {
             // loading the coins to the modal.
             for (let i in liveCoins) {
                 document.getElementById(`coin-${i}`).innerText = liveCoins[i];
+                document.getElementById(`coin-switch-${i}`).checked = "true";
             }
             // showing the modal.
             document.getElementById("errorModal").style.display = "block";
         }
+    }
+    const liveReportsLink = document.getElementById(`live-reports`)
+    if (liveCoins.length > 0) {
+        liveReportsLink.className = liveReportsLink.className.replace(" disabled", "").replace("disabled ", "");
+    }
+    else {
+        liveReportsLink.className += " disabled";
     }
 }
 
@@ -169,6 +181,7 @@ function openCollapse(ev) {
                 // hiding the spinner.
                 hideItem(document.getElementById("spinner"));
                 // inserting relevent info.
+                // TODO************************** CHECK IF DATA IS undefined.
                 document.getElementById(`${key}-collapse`).innerHTML =
                     `<img src="${res.image.small}">
                      <p>USD: ${res.market_data.current_price.usd}$</p>
@@ -191,6 +204,7 @@ function openCollapse(ev) {
 async function changePage(ev) {
     // getting the desired page. 
     let ref = ev.target.href.split("#")[1];
+    hideItem(document.getElementById(`navbarSupportedContent`));
     let res;
     switch (ref) {
         case "home":
@@ -208,8 +222,10 @@ async function changePage(ev) {
             break;
         case "live-reports":
             // fetching the template.
+            // TODO************************** CREATE PAGE.
             res = await fetch(`./live-reports-body.html`);
             document.getElementById("content").innerHTML = await res.text();
+            await loadReports();
             break;
         default:
             // not supposed to get here.
@@ -217,6 +233,57 @@ async function changePage(ev) {
             res = await fetch(`./error-body.html`);
             document.getElementById("content").innerHTML = await res.text();
             break;
+    }
+}
+
+async function loadReports() {
+    const BASE_URL = "https://min-api.cryptocompare.com/data/pricemulti";
+    const TSYMS = `USD`;
+    const FSYMS = liveCoins.join(',');
+    console.log(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
+    let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
+    let res = await raw_res.json();
+    if (!res.Response) {
+        // check if all coins came back
+        if (Object.keys(res).length < liveCoins.length) {
+            liveCoins.forEach(el => {
+                if (!res[el.toUpperCase()]) {
+                    const item = document.createElement("li");
+                    item.innerText = el;
+                    document.getElementById("missing-coins").appendChild(item);
+                }
+            });
+            document.getElementById("errorModal").style.display = "block";
+        }
+        else {
+            let parsedData = [];
+            Object.keys(res).forEach(coin => parsedData.push({
+                name: "Myrtle Beach",
+                type: "spline",
+                yValueFormatString: "#0.##$",
+                showInLegend: true,
+                dataPoints: [{ x: Date.now(), y: res.USD }]
+            }));
+
+            chart = new CanvasJS.Chart("chartContainer", {
+                title: {
+                    text: "Current Price"
+                },
+                axisX: {
+                    valueFormatString: "HH:MM"
+                },
+                axisY: {
+                    title: "Price (in USD)",
+                    suffix: "$"
+                },
+                data: parsedData
+            });
+            chart.render();
+            console.log(res);
+        }
+    }
+    else {
+        alert("The Coins you have chosen, do not appear in our database");
     }
 }
 
