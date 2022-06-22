@@ -229,7 +229,7 @@ async function changePage(ev) {
             document.getElementById("content").innerHTML = await res.text();
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
             // loading coin cards to screen.
-            await loadCoins('./response.json');//BASE_URL);
+            await loadCoins(BASE_URL);
             break;
         case "about":
             // fetching the template.
@@ -285,7 +285,7 @@ async function loadReports(ask) {
 
                 // creating a stock monitor
                 const stock = document.createElement("div");
-                stock.innerHTML = `<b>${coin}</b> <span id="${`${coin}-stock`}" data-innitialval="${res[coin].USD}">0%-</span>`;
+                stock.innerHTML = `<b>${coin}</b> <span id="${`${coin}-stock`}" data-innitialval="${res[coin].USD}">0%</span>`;
                 document.getElementById("stonks").appendChild(stock);
             }
 
