@@ -85,7 +85,7 @@ async function loadCoins(url) {
 
         // creating "More Info" button.
         const btn = document.createElement(`button`);
-        btn.className = "btn btn-primary";
+        btn.className = "btn btn-primary down";
         btn.setAttribute("aria-controls", `${e.id}-collapse`);
         btn.innerText = "More Info";
         btn.addEventListener("click", openCollapse);

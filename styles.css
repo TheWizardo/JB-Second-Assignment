@@ -1,7 +1,7 @@
 .parallax {
     background-image: url("/assets/cryptocurrency.jpg");
 
-    min-height: 200px;
+    min-height: 80vh;
 
     background-attachment: fixed;
     background-position: center;
@@ -12,6 +12,10 @@
 .card {
     width: 13rem;
     margin: 0.2em;
+}
+
+.card-body {
+    padding-bottom: 2.75em;
 }
 
 .form-check-input {
@@ -96,4 +100,10 @@ td {
     position: sticky;
     top: 0;
     z-index: 5;
+}
+
+.down {
+    position: absolute;
+    bottom: 1em;
+    left: 0.95em;
 }
