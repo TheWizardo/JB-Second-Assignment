@@ -1,4 +1,4 @@
-let liveCoins = []; //TO DO: change liveCoins data structure
+let liveCoins = {};
 let cache = {};
 let chart;
 
@@ -70,10 +70,10 @@ async function loadCoins(url) {
         // creating a switch.
         const input = document.createElement(`input`);
         input.className = "form-check-input";
-        input.id = `${e.symbol}-switch`;
+        input.id = `${e.id}-switch`;
         input.setAttribute("type", "checkbox");
         input.setAttribute("role", "switch");
-        if (liveCoins.includes(e.symbol)) {
+        if (liveCoins[e.id]) {
             input.setAttribute("checked", "true");
         }
         input.addEventListener("click", switchSwitched);
@@ -119,16 +119,19 @@ function switchSwitched(ev) {
     let $cardContent = $(ev.target.parentNode);
     // finding the title.
     let header = $cardContent.find(`.card-title`)[0].innerText;
+    let id = ev.target.parentNode.dataset.id;
     if (!ev.target.checked) {
         // removing the coin from the list.
-        liveCoins.splice(liveCoins.indexOf(header), 1);
+        delete liveCoins[id];
     }
     else {
-        liveCoins.push(header);
-        if (liveCoins.length > 5) {
+        liveCoins[id] = header;
+        if (Object.keys(liveCoins).length > 5) {
             // loading the coins to the modal.
-            for (let i in liveCoins) {
-                document.getElementById(`coin-${i}`).innerText = liveCoins[i];
+            let liveCoins_keys = Object.keys(liveCoins)
+            for (let i = 0; i < liveCoins_keys.length; i++) {
+                document.getElementById(`coin-${i}`).innerHTML = `<b>${liveCoins[liveCoins_keys[i]]}</b> (${liveCoins_keys[i]})`;
+                document.getElementById(`coin-${i}`).dataset.id = liveCoins_keys[i];
                 document.getElementById(`coin-switch-${i}`).checked = "true";
             }
             // showing the modal.
@@ -136,7 +139,7 @@ function switchSwitched(ev) {
         }
     }
     const liveReportsLink = document.getElementById(`live-reports`)
-    if (liveCoins.length > 0) {
+    if (Object.keys(liveCoins).length > 0) {
         liveReportsLink.className = liveReportsLink.className.replace(" disabled", "").replace("disabled ", "");
     }
     else {
@@ -147,19 +150,20 @@ function switchSwitched(ev) {
 function handleConflict(ev) {
     // getting the title from the ajacent cell of the table.
     let header = ev.target.parentNode.previousElementSibling.innerText;
+    let id = ev.target.parentNode.previousElementSibling.dataset.id;
     // updating main cards according to the choice.
-    document.getElementById(`${header}-switch`).checked = ev.target.checked;
+    document.getElementById(`${id}-switch`).checked = ev.target.checked;
     if (!ev.target.checked) {
-        liveCoins.splice(liveCoins.indexOf(header), 1);
+        delete liveCoins[id];
     }
     else {
-        liveCoins.push(header);
+        liveCoins[id] = header;
     }
 }
 
 function closeModal() {
     // able to close the modal only if 5 or less coins are selected.
-    if (liveCoins.length <= 5) {
+    if (Object.keys(liveCoins).length <= 5) {
         document.getElementById("errorModal").style.display = "none";
     }
     else {
@@ -181,12 +185,15 @@ function openCollapse(ev) {
                 // hiding the spinner.
                 hideItem(document.getElementById("spinner"));
                 // inserting relevent info.
-                // TODO************************** CHECK IF DATA IS undefined.
-                document.getElementById(`${key}-collapse`).innerHTML =
-                    `<img src="${res.image.small}">
-                     <p>USD: ${res.market_data.current_price.usd}$</p>
+                collapse.innerHTML = `<img src="${res.image.small}">`;
+                if (res?.market_data?.current_price?.usd) {
+                    collapse.innerHTML +=  `<p>USD: ${res.market_data.current_price.usd}$</p>
                      <p>ILS: ${res.market_data.current_price.ils}₪</p>
                      <p>EUR: ${res.market_data.current_price.eur}€</p>`;
+                }
+                else {
+                    collapse.innerHTML += "<p>No Info found :(</p>";
+                }
                 showItem(collapse);
             });
             break;
@@ -204,6 +211,7 @@ function openCollapse(ev) {
 async function changePage(ev) {
     // getting the desired page. 
     let ref = ev.target.href.split("#")[1];
+    document.getElementById(`searchInput`).value = "";
     hideItem(document.getElementById(`navbarSupportedContent`));
     let res;
     switch (ref) {
@@ -213,7 +221,7 @@ async function changePage(ev) {
             document.getElementById("content").innerHTML = await res.text();
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
             // loading coin cards to screen.
-            await loadCoins(BASE_URL);
+            await loadCoins('./response.json');//BASE_URL);
             break;
         case "about":
             // fetching the template.
@@ -222,7 +230,6 @@ async function changePage(ev) {
             break;
         case "live-reports":
             // fetching the template.
-            // TODO************************** CREATE PAGE.
             res = await fetch(`./live-reports-body.html`);
             document.getElementById("content").innerHTML = await res.text();
             await loadReports(true);
@@ -240,30 +247,32 @@ async function loadReports(ask) {
     closeModal();
     const BASE_URL = "https://min-api.cryptocompare.com/data/pricemulti";
     const TSYMS = `USD`;
-    const FSYMS = liveCoins.join(',');
+    const FSYMS = Object.values(liveCoins).join(',');
     let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
     let res = await raw_res.json();
     if (!res.Response) {
         // check if all coins came back
-        if (Object.keys(res).length < liveCoins.length && ask) {
-            liveCoins.forEach(el => {
+        if (Object.keys(res).length < Object.keys(liveCoins).length && ask) {
+            for (let el of liveCoins) {
                 if (!res[el.toUpperCase()]) {
                     const item = document.createElement("li");
                     item.innerText = el;
                     document.getElementById("missing-coins").appendChild(item);
                 }
-            });
+            }
             document.getElementById("errorModal").style.display = "block";
         }
         else {
             let parsedData = [];
-            Object.keys(res).forEach(coin => parsedData.push({
-                name: coin,
-                type: "spline",
-                yValueFormatString: "#0.##$",
-                showInLegend: true,
-                dataPoints: [{ x: new Date(), y: res[coin].USD }]
-            }));
+            for (let coin in res) {
+                parsedData.push({
+                    name: coin,
+                    type: "spline",
+                    yValueFormatString: "#0.##$",
+                    showInLegend: true,
+                    dataPoints: [{ x: new Date(), y: res[coin].USD }]
+                });
+            }
 
             if (chart) {
                 clearInterval(chart.loader);
@@ -282,16 +291,14 @@ async function loadReports(ask) {
                 data: parsedData
             });
             chart.render();
-            console.log(chart.loader);
             chart.loader = setInterval(async () => {
                 let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
                 let res = await raw_res.json();
                 for (let i = 0; i < chart.data.length; i++) {
-                    console.log(chart.data[i].name);
                     chart.data[i].addTo("dataPoints", { x: new Date(), y: res[chart.data[i].name].USD });
                 }
                 chart.render();
-            }, 10 * 1000);
+            }, 2 * 1000);
         }
     }
     else {
@@ -310,20 +317,25 @@ function filterSearch(ev) {
     // getting the rule to filter by.
     const rule = document.getElementById(`searchInput`).value;
     let container = document.getElementById(`main`);
-    container.childNodes.forEach(card => {
-        let $card = $(card)
-        let header = $card.find(`.card-title`)[0].innerText;
-        // showing all cards that fit the search
-        if (rule === "" || header === rule) {
-            card.style.display = "block";
-        }
-        else {
-            card.style.display = "none";
-        }
-    });
+    if (container) {
+        container.childNodes.forEach(card => {
+            let $card = $(card)
+            let header = $card.find(`.card-title`)[0].innerText;
+            // showing all cards that fit the search
+            if (rule === "" || header === rule) {
+                card.style.display = "block";
+            }
+            else {
+                card.style.display = "none";
+            }
+        });
+    }
 }
 
 function clearSearch(ev) {
     document.getElementById(`searchInput`).value = "";
-    document.getElementById(`main`).childNodes.forEach(card => card.style.display = "block");
+    let container = document.getElementById(`main`);
+    if (container) {
+        container.childNodes.forEach(card => card.style.display = "block");
+    }
 }
