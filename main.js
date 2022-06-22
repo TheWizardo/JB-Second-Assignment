@@ -103,8 +103,8 @@ async function loadCoins(url) {
         cardContent.appendChild(lable);
         cardContent.appendChild(input);
         cardContent.appendChild(par);
-        cardContent.appendChild(btn);
         cardContent.appendChild(collapseDiv);
+        cardContent.appendChild(btn);
 
         // adding the card to the screen.
         const wholeCard = document.createElement(`div`);
@@ -138,6 +138,7 @@ function switchSwitched(ev) {
             document.getElementById("errorModal").style.display = "block";
         }
     }
+    // preventing the user from entering the live reports page, if no coins were chosen
     const liveReportsLink = document.getElementById(`live-reports`)
     if (Object.keys(liveCoins).length > 0) {
         liveReportsLink.className = liveReportsLink.className.replace(" disabled", "").replace("disabled ", "");
@@ -198,6 +199,7 @@ function openCollapse(ev) {
             });
             break;
         case "Less Info":
+            // closing the collapse
             ev.target.innerText = "More Info";
             hideItem(collapse);
             break;
@@ -211,9 +213,12 @@ function openCollapse(ev) {
 async function changePage(ev) {
     // getting the desired page. 
     let ref = ev.target.href.split("#")[1];
+    // for visual perpose
     document.getElementById(`searchInput`).value = "";
     hideItem(document.getElementById(`navbarSupportedContent`));
+
     if (chart) {
+        // clearing the updating function when not in Live Reports page
         clearInterval(chart.loader);
     }
     let res;
@@ -250,8 +255,8 @@ async function loadReports(ask) {
     closeModal();
     document.getElementById("stonks").innerHTML = "";
     const BASE_URL = "https://min-api.cryptocompare.com/data/pricemulti";
-    const TSYMS = `USD`;
-    const FSYMS = Object.values(liveCoins).join(',');
+    const TSYMS = `USD`; // desired fiat system
+    const FSYMS = Object.values(liveCoins).join(','); // desired coins
     let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
     let res = await raw_res.json();
     if (!res.Response) {
@@ -269,6 +274,7 @@ async function loadReports(ask) {
         else {
             let parsedData = [];
             for (let coin in res) {
+                // creating a graph for each returned coin
                 parsedData.push({
                     name: coin,
                     type: "spline",
@@ -276,11 +282,14 @@ async function loadReports(ask) {
                     showInLegend: true,
                     dataPoints: [{ x: new Date(), y: res[coin].USD }]
                 });
-                    
+
+                // creating a stock monitor
                 const stock = document.createElement("div");
                 stock.innerHTML = `<b>${coin}</b> <span id="${`${coin}-stock`}" data-innitialval="${res[coin].USD}">0%-</span>`;
                 document.getElementById("stonks").appendChild(stock);
             }
+
+            // configuring the chart
             chart = new CanvasJS.Chart("chartContainer", {
                 title: {
                     text: "Current Price"
@@ -300,27 +309,35 @@ async function loadReports(ask) {
     }
     else {
         alert("The Coins you have chosen, do not appear in our database");
+        changePage({ target: { href: "#home" } });
     }
 }
 
 async function updateLiveReports(BASE_URL, FSYMS, TSYMS) {
+    // fetching the data
     let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
     let res = await raw_res.json();
+
+    // appending new datapoints
     for (let i = 0; i < chart.data.length; i++) {
         chart.data[i].addTo("dataPoints", { x: new Date(), y: res[chart.data[i].name].USD });
     }
-    for (let coin of Object.keys(res)){
+
+    // updating the stocks elements
+    for (let coin of Object.keys(res)) {
         const stock = document.getElementById(`${coin}-stock`);
         let percent = 1 - (Number(stock.dataset.innitialval) / res[coin].USD);
+        // using EPSILON so that 0.0005 will round up.
         percent = Math.round((percent + Number.EPSILON) * 1000) / 1000;
         stock.innerText = `${percent}%`;
-        if (percent == 0){
+        // color change
+        if (percent == 0) {
             stock.style.color = "black";
         }
-        if (percent > 0){
+        if (percent > 0) {
             stock.style.color = "green";
         }
-        if (percent < 0){
+        if (percent < 0) {
             stock.style.color = "red";
         }
     }
@@ -357,6 +374,7 @@ function filterSearch(ev) {
 function clearSearch(ev) {
     document.getElementById(`searchInput`).value = "";
     let container = document.getElementById(`main`);
+    // do nothing if not on home page
     if (container) {
         container.childNodes.forEach(card => card.style.display = "block");
     }
