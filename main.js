@@ -187,7 +187,7 @@ function openCollapse(ev) {
                 // inserting relevent info.
                 collapse.innerHTML = `<img src="${res.image.small}">`;
                 if (res?.market_data?.current_price?.usd) {
-                    collapse.innerHTML +=  `<p>USD: ${res.market_data.current_price.usd}$</p>
+                    collapse.innerHTML += `<p>USD: ${res.market_data.current_price.usd}$</p>
                      <p>ILS: ${res.market_data.current_price.ils}₪</p>
                      <p>EUR: ${res.market_data.current_price.eur}€</p>`;
                 }
@@ -213,6 +213,9 @@ async function changePage(ev) {
     let ref = ev.target.href.split("#")[1];
     document.getElementById(`searchInput`).value = "";
     hideItem(document.getElementById(`navbarSupportedContent`));
+    if (chart) {
+        clearInterval(chart.loader);
+    }
     let res;
     switch (ref) {
         case "home":
@@ -245,6 +248,7 @@ async function changePage(ev) {
 
 async function loadReports(ask) {
     closeModal();
+    document.getElementById("stonks").innerHTML = "";
     const BASE_URL = "https://min-api.cryptocompare.com/data/pricemulti";
     const TSYMS = `USD`;
     const FSYMS = Object.values(liveCoins).join(',');
@@ -253,7 +257,7 @@ async function loadReports(ask) {
     if (!res.Response) {
         // check if all coins came back
         if (Object.keys(res).length < Object.keys(liveCoins).length && ask) {
-            for (let el of liveCoins) {
+            for (let el of Object.values(liveCoins)) {
                 if (!res[el.toUpperCase()]) {
                     const item = document.createElement("li");
                     item.innerText = el;
@@ -272,10 +276,10 @@ async function loadReports(ask) {
                     showInLegend: true,
                     dataPoints: [{ x: new Date(), y: res[coin].USD }]
                 });
-            }
-
-            if (chart) {
-                clearInterval(chart.loader);
+                    
+                const stock = document.createElement("div");
+                stock.innerHTML = `<b>${coin}</b> <span id="${`${coin}-stock`}" data-innitialval="${res[coin].USD}">0%-</span>`;
+                document.getElementById("stonks").appendChild(stock);
             }
             chart = new CanvasJS.Chart("chartContainer", {
                 title: {
@@ -291,19 +295,37 @@ async function loadReports(ask) {
                 data: parsedData
             });
             chart.render();
-            chart.loader = setInterval(async () => {
-                let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
-                let res = await raw_res.json();
-                for (let i = 0; i < chart.data.length; i++) {
-                    chart.data[i].addTo("dataPoints", { x: new Date(), y: res[chart.data[i].name].USD });
-                }
-                chart.render();
-            }, 2 * 1000);
+            chart.loader = setInterval(() => updateLiveReports(BASE_URL, FSYMS, TSYMS), 2 * 1000);
         }
     }
     else {
         alert("The Coins you have chosen, do not appear in our database");
     }
+}
+
+async function updateLiveReports(BASE_URL, FSYMS, TSYMS) {
+    let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
+    let res = await raw_res.json();
+    for (let i = 0; i < chart.data.length; i++) {
+        chart.data[i].addTo("dataPoints", { x: new Date(), y: res[chart.data[i].name].USD });
+    }
+    for (let coin of Object.keys(res)){
+        const stock = document.getElementById(`${coin}-stock`);
+        let percent = 1 - (Number(stock.dataset.innitialval) / res[coin].USD);
+        percent = Math.round((percent + Number.EPSILON) * 1000) / 1000;
+        stock.innerText = `${percent}%`;
+        if (percent == 0){
+            stock.style.color = "black";
+        }
+        if (percent > 0){
+            stock.style.color = "green";
+        }
+        if (percent < 0){
+            stock.style.color = "red";
+        }
+    }
+    chart.render();
+
 }
 
 // toggleing the nav-bar.
