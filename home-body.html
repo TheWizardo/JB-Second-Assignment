@@ -5,41 +5,47 @@
     </div>
     <p style="font-size: x-large;">Retrieving information...</p>
 </div>
+<div id="search-spinner" class="spanner d-flex justify-content-center align-items-center">
+    <div class="spinner-border m-5" role="status">
+        <span class="visually-hidden"></span>
+    </div>
+    <p style="font-size: x-large;">Searching...</p>
+</div>
 <div id="errorModal" class="modal">
-    <div class="modal-content">
-        <button class="close" onclick="closeModal()">&times;</button>
+    <div class="modal-content form-check form-switch">
+        <button type="button" class="btn-close" aria-label="Close" onclick="closeModal()"></button>
         <h2>Error: Too many coins chosen</h2>
         <p>Please resolve this conflict. Up to 5 coins can be cosen at once.</p>
         <span class="error" id="error-span">I cannot let you leave things like this!</span>
         <table id="conflict">
             <tr>
                 <td id="coin-0"></td>
-                <td><input id="coin-switch-0" type="checkbox" class="form-check-input" role="switch"
+                <td><input id="coin-switch-0" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
             <tr>
                 <td id="coin-1"></td>
-                <td><input id="coin-switch-1" type="checkbox" class="form-check-input" role="switch"
+                <td><input id="coin-switch-1" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
             <tr>
                 <td id="coin-2"></td>
-                <td><input id="coin-switch-2" type="checkbox" class="form-check-input" role="switch"
+                <td><input id="coin-switch-2" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
             <tr>
                 <td id="coin-3"></td>
-                <td><input id="coin-switch-3" type="checkbox" class="form-check-input" role="switch"
+                <td><input id="coin-switch-3" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
             <tr>
                 <td id="coin-4"></td>
-                <td><input id="coin-switch-4" type="checkbox" class="form-check-input" role="switch"
+                <td><input id="coin-switch-4" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
             <tr>
                 <td id="coin-5"></td>
-                <td><input id="coin-switch-5" type="checkbox" class="form-check-input" role="switch"
+                <td><input id="coin-switch-5" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
         </table>
