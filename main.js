@@ -54,7 +54,7 @@ async function getInfo(url) {
 async function loadCoins(url) {
     // fetching data.
     allCoins = await getInfo(url);
-    // hiding the spinner after recieving the data.
+    // hiding the spinner after receiving the data.
     hideItem(document.getElementById("spinner"));
     allCoins.map(e => {
         // creating a title.
@@ -62,10 +62,10 @@ async function loadCoins(url) {
         title.className = "card-title";
         title.innerText = e.symbol;
 
-        // creating a lable for the switch.
-        const lable = document.createElement(`lable`);
-        lable.className = "small-gray";
-        lable.innerText = "Show on Live Reports";
+        // creating a label for the switch.
+        const label = document.createElement(`label`);
+        label.className = "small-gray";
+        label.innerText = "Show on Live Reports";
 
         // creating a switch.
         const input = document.createElement(`input`);
@@ -78,7 +78,7 @@ async function loadCoins(url) {
         }
         input.addEventListener("click", switchSwitched);
 
-        // creating coin explenation.
+        // creating coin explanation.
         const par = document.createElement(`p`);
         par.className = "catd-text";
         par.innerText = e.name;
@@ -100,7 +100,7 @@ async function loadCoins(url) {
         cardContent.className = "card-body form-switch";
         cardContent.setAttribute("data-id", `${e.id}`);
         cardContent.appendChild(title);
-        cardContent.appendChild(lable);
+        cardContent.appendChild(label);
         cardContent.appendChild(input);
         cardContent.appendChild(par);
         cardContent.appendChild(collapseDiv);
@@ -134,6 +134,7 @@ function switchSwitched(ev) {
                 document.getElementById(`coin-${i}`).dataset.id = liveCoins_keys[i];
                 document.getElementById(`coin-switch-${i}`).checked = "true";
             }
+            hideItem(document.getElementById("error-span"))
             // showing the modal.
             document.getElementById("errorModal").style.display = "block";
         }
@@ -149,7 +150,7 @@ function switchSwitched(ev) {
 }
 
 function handleConflict(ev) {
-    // getting the title from the ajacent cell of the table.
+    // getting the title from the adjacent cell of the table.
     let header = ev.target.parentNode.previousElementSibling.innerText;
     let id = ev.target.parentNode.previousElementSibling.dataset.id;
     // updating main cards according to the choice.
@@ -185,7 +186,7 @@ function openCollapse(ev) {
             getInfo(`${BASE_URL}${key}`).then(res => {
                 // hiding the spinner.
                 hideItem(document.getElementById("spinner"));
-                // inserting relevent info.
+                // inserting relevant info.
                 collapse.innerHTML = `<img src="${res.image.small}">`;
                 if (res?.market_data?.current_price?.usd) {
                     collapse.innerHTML += `<p>USD: ${res.market_data.current_price.usd}$</p>
@@ -204,7 +205,7 @@ function openCollapse(ev) {
             hideItem(collapse);
             break;
         default:
-            // handeling of other scenarios.
+            // handling of other scenarios.
             // not supposed to get here.
             throw new Error("something went wrong...");
     }
@@ -213,7 +214,7 @@ function openCollapse(ev) {
 async function changePage(ev) {
     // getting the desired page. 
     let ref = ev.target.href.split("#")[1];
-    // for visual perpose
+    // for visual purpose
     document.getElementById(`searchInput`).value = "";
     hideItem(document.getElementById(`navbarSupportedContent`));
 
@@ -229,7 +230,7 @@ async function changePage(ev) {
             document.getElementById("content").innerHTML = await res.text();
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
             // loading coin cards to screen.
-            await loadCoins(BASE_URL);
+            await loadCoins("./response-full.json");//BASE_URL);
             break;
         case "about":
             // fetching the template.
@@ -285,7 +286,7 @@ async function loadReports(ask) {
 
                 // creating a stock monitor
                 const stock = document.createElement("div");
-                stock.innerHTML = `<b>${coin}</b> <span id="${`${coin}-stock`}" data-innitialval="${res[coin].USD}">0%</span>`;
+                stock.innerHTML = `<b>${coin}</b> <span id="${`${coin}-stock`}" data-initialval="${res[coin].USD}">0%</span>`;
                 document.getElementById("stonks").appendChild(stock);
             }
 
@@ -318,15 +319,16 @@ async function updateLiveReports(BASE_URL, FSYMS, TSYMS) {
     let raw_res = await fetch(`${BASE_URL}?fsyms=${FSYMS}&tsyms=${TSYMS}`);
     let res = await raw_res.json();
 
-    // appending new datapoints
+    // appending new data-points
+    let now =  new Date();
     for (let i = 0; i < chart.data.length; i++) {
-        chart.data[i].addTo("dataPoints", { x: new Date(), y: res[chart.data[i].name].USD });
+        chart.data[i].addTo("dataPoints", { x: now, y: res[chart.data[i].name].USD });
     }
 
     // updating the stocks elements
     for (let coin of Object.keys(res)) {
         const stock = document.getElementById(`${coin}-stock`);
-        let percent = 1 - (Number(stock.dataset.innitialval) / res[coin].USD);
+        let percent = 1 - (Number(stock.dataset.initialval) / res[coin].USD);
         // using EPSILON so that 0.0005 will round up.
         percent = Math.round((percent + Number.EPSILON) * 1000) / 1000;
         stock.innerText = `${percent}%`;
@@ -345,7 +347,7 @@ async function updateLiveReports(BASE_URL, FSYMS, TSYMS) {
 
 }
 
-// toggleing the nav-bar.
+// toggling the nav-bar.
 function toggleMenu() {
     let menu = document.getElementById(`navbarSupportedContent`);
     menu.className.includes(`show`) ? hideItem(menu) : showItem(menu);
@@ -353,22 +355,29 @@ function toggleMenu() {
 
 function filterSearch(ev) {
     ev.preventDefault();
-    // getting the rule to filter by.
-    const rule = document.getElementById(`searchInput`).value;
-    let container = document.getElementById(`main`);
-    if (container) {
-        container.childNodes.forEach(card => {
-            let $card = $(card)
-            let header = $card.find(`.card-title`)[0].innerText;
-            // showing all cards that fit the search
-            if (rule === "" || header === rule) {
-                card.style.display = "block";
+    showItem(document.getElementById("search-spinner"));
+    console.log("show");
+    // off setting the search in order to render the spinner.
+    setTimeout(() => {
+        // getting the rule to filter by.
+        const rule = document.getElementById(`searchInput`).value;
+        let container = document.getElementById(`main`);
+        if (container) {
+            for (let card of container.childNodes) {
+                let $card = $(card)
+                let header = $card.find(`.card-title`)[0].innerText;
+                // showing all cards that fit the search
+                if (rule === "" || header === rule) {
+                    card.style.display = "block";
+                }
+                else {
+                    card.style.display = "none";
+                }
             }
-            else {
-                card.style.display = "none";
-            }
-        });
-    }
+        }
+        hideItem(document.getElementById("search-spinner"));
+        console.log("hide");
+    }, 50);
 }
 
 function clearSearch(ev) {
