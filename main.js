@@ -384,6 +384,7 @@ function clearSearch(ev) {
     // do nothing if not on home page
     if (container) {
         showItem(document.getElementById("search-spinner"));
+        // off setting the search in order to render the spinner.
         setTimeout(() => {
             container.childNodes.forEach(card => card.style.display = "block");
             hideItem(document.getElementById("search-spinner"));
