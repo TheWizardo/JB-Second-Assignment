@@ -27,7 +27,7 @@
     font-size: small;
 }
 
-.spanner {
+.spinner {
     position: fixed;
     top: 0;
     left: 0;
@@ -35,12 +35,26 @@
     width: 100%;
     display: block;
     text-align: center;
-    height: 300px;
     color: #FFF;
     z-index: 1000;
     visibility: hidden;
     height: 100vh;
-    opacity: 0;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.search-spinner {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    background: white;
+    width: 100%;
+    display: block;
+    text-align: center;
+    z-index: 1000;
+    visibility: hidden;
+    height: 100%;
     -webkit-transition: all 0.3s;
     -moz-transition: all 0.3s;
     transition: all 0.3s;
@@ -50,7 +64,7 @@
     visibility: visible;
 }
 
-.spanner.show {
+.spinner.show {
     opacity: 1
 }
 

@@ -320,7 +320,7 @@ async function updateLiveReports(BASE_URL, FSYMS, TSYMS) {
     let res = await raw_res.json();
 
     // appending new data-points
-    let now =  new Date();
+    let now = new Date();
     for (let i = 0; i < chart.data.length; i++) {
         chart.data[i].addTo("dataPoints", { x: now, y: res[chart.data[i].name].USD });
     }
@@ -355,14 +355,13 @@ function toggleMenu() {
 
 function filterSearch(ev) {
     ev.preventDefault();
-    showItem(document.getElementById("search-spinner"));
-    console.log("show");
-    // off setting the search in order to render the spinner.
-    setTimeout(() => {
-        // getting the rule to filter by.
+    let container = document.getElementById(`main`);
+    if (container) {
         const rule = document.getElementById(`searchInput`).value;
-        let container = document.getElementById(`main`);
-        if (container) {
+        showItem(document.getElementById("search-spinner"));
+        // off setting the search in order to render the spinner.
+        setTimeout(() => {
+            // getting the rule to filter by.
             for (let card of container.childNodes) {
                 let $card = $(card)
                 let header = $card.find(`.card-title`)[0].innerText;
@@ -374,10 +373,9 @@ function filterSearch(ev) {
                     card.style.display = "none";
                 }
             }
-        }
-        hideItem(document.getElementById("search-spinner"));
-        console.log("hide");
-    }, 50);
+            hideItem(document.getElementById("search-spinner"));
+        }, 50);
+    }
 }
 
 function clearSearch(ev) {
@@ -385,6 +383,10 @@ function clearSearch(ev) {
     let container = document.getElementById(`main`);
     // do nothing if not on home page
     if (container) {
-        container.childNodes.forEach(card => card.style.display = "block");
+        showItem(document.getElementById("search-spinner"));
+        setTimeout(() => {
+            container.childNodes.forEach(card => card.style.display = "block");
+            hideItem(document.getElementById("search-spinner"));
+        }, 50);
     }
 }
