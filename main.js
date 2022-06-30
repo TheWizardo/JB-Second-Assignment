@@ -166,8 +166,13 @@ function handleConflict(ev) {
 function closeModal() {
     // able to close the modal only if 5 or less coins are selected.
     if (Object.keys(liveCoins).length === 6) {
-        let id = Object.keys(liveCoins)[5];
-        delete liveCoins[id];
+        const table = document.getElementById("conflict");
+        for (id of Object.keys(liveCoins)) {
+            if (!table.innerText.includes(id.toString())) {
+                delete liveCoins[id];
+                break;
+            }
+        }
     }
     else {
         let id = Object.keys(liveCoins)[Object.keys(liveCoins).length - 1];
