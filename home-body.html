@@ -14,8 +14,8 @@
     <div class="modal-content form-check form-switch">
         <button type="button" class="btn-close" aria-label="Close" onclick="closeModal()"></button>
         <h2>Error: Too many coins chosen</h2>
-        <p>Please resolve this conflict. Up to 5 coins can be cosen at once.</p>
-        <span class="error" id="error-span">I cannot let you leave things like this!</span>
+        <p>Please resolve this conflict. Up to 5 coins can be chosen at once.</p>
+        <p>Delete some of the pervious coins to make room for the new coin, or exit to cancel.</p>
         <table id="conflict">
             <tr>
                 <td id="coin-0"></td>
@@ -40,11 +40,6 @@
             <tr>
                 <td id="coin-4"></td>
                 <td><input id="coin-switch-4" class="form-check-input" type="checkbox" role="switch"
-                        onclick="handleConflict(event)"></td>
-            </tr>
-            <tr>
-                <td id="coin-5"></td>
-                <td><input id="coin-switch-5" class="form-check-input" type="checkbox" role="switch"
                         onclick="handleConflict(event)"></td>
             </tr>
         </table>

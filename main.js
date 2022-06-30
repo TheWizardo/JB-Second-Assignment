@@ -127,14 +127,14 @@ function switchSwitched(ev) {
     else {
         liveCoins[id] = header;
         if (Object.keys(liveCoins).length > 5) {
+            ev.target.checked = false;
             // loading the coins to the modal.
             let liveCoins_keys = Object.keys(liveCoins)
-            for (let i = 0; i < liveCoins_keys.length; i++) {
+            for (let i = 0; i < liveCoins_keys.length - 1; i++) {
                 document.getElementById(`coin-${i}`).innerHTML = `<b>${liveCoins[liveCoins_keys[i]]}</b> (${liveCoins_keys[i]})`;
                 document.getElementById(`coin-${i}`).dataset.id = liveCoins_keys[i];
                 document.getElementById(`coin-switch-${i}`).checked = "true";
             }
-            hideItem(document.getElementById("error-span"))
             // showing the modal.
             document.getElementById("errorModal").style.display = "block";
         }
@@ -165,13 +165,16 @@ function handleConflict(ev) {
 
 function closeModal() {
     // able to close the modal only if 5 or less coins are selected.
-    if (Object.keys(liveCoins).length <= 5) {
-        document.getElementById("errorModal").style.display = "none";
+    if (Object.keys(liveCoins).length === 6) {
+        let id = Object.keys(liveCoins)[5];
+        delete liveCoins[id];
     }
     else {
-        // showing an error to the user.
-        showItem(document.getElementById("error-span"))
+        let id = Object.keys(liveCoins)[Object.keys(liveCoins).length - 1];
+        document.getElementById(`${id}-switch`).checked = true;
     }
+
+    document.getElementById("errorModal").style.display = "none";
 }
 
 function openCollapse(ev) {
@@ -230,7 +233,7 @@ async function changePage(ev) {
             document.getElementById("content").innerHTML = await res.text();
             const BASE_URL = `https://api.coingecko.com/api/v3/coins/list`;
             // loading coin cards to screen.
-            await loadCoins("./response-full.json");//BASE_URL);
+            await loadCoins(BASE_URL);
             break;
         case "about":
             // fetching the template.
