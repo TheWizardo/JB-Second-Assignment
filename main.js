@@ -164,8 +164,9 @@ function handleConflict(ev) {
 }
 
 function closeModal() {
-    // able to close the modal only if 5 or less coins are selected.
     if (Object.keys(liveCoins).length === 6) {
+        // remove the 6th coin from the list
+        // the only coin that does not appear on the table
         const table = document.getElementById("conflict");
         for (id of Object.keys(liveCoins)) {
             if (!table.innerText.includes(id.toString())) {
@@ -175,6 +176,7 @@ function closeModal() {
         }
     }
     else {
+        // continue with the current selection of coins
         let id = Object.keys(liveCoins)[Object.keys(liveCoins).length - 1];
         document.getElementById(`${id}-switch`).checked = true;
     }
